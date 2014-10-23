@@ -8,13 +8,13 @@ FileRead, File, %A_LineFile%
 
 NormalColor := Chr(3) Chr(Console.Colors.White)
 
-Operators := "\+|-|\*|!|~|&|/|<|>|\^|\||=|&&|\|\||\?|:|\(|\)|,|%"
 File := RegExReplace(File, "\R", "`n")
-File := RegExReplace(File, "i)((?:" Operators ")+)", Chr(3) Chr(Console.Colors.Aqua) "$1" NormalColor)
-File := RegExReplace(File, "m`n)^(\s*#[^\s,\R]+)", Chr(3) Chr(Console.Colors.Teal) "$1" NormalColor)
-File := RegExReplace(File, "\b(0x[0-9A-F]+|\d+)\b", Chr(3) Chr(Console.Colors.Fuchsia) "$1" NormalColor)
+Regexes := {"i)((?:\+|-|\*|!|~|&|/|<|>|\^|\||=|\||\?|:|\(|\)|,|%)+)": Console.Colors.Aqua
+, "m`n)^(\s*#[^\s,\R]+)": Console.Colors.Teal, "\b(0x[0-9A-F]+|\d+)\b": Console.Colors.Fuchsia}
+for Regex, NewColor in Regexes
+	File := RegExReplace(File, Regex, Chr(3) Chr(NewColor) "$1" NormalColor)
 
-for type, words in Commands
+for Type, Words in Commands
 {
 	if Type in Flow,Indent
 		NewColor := Chr(3) Chr(Console.Colors.Lime)
@@ -29,8 +29,7 @@ File := StrSplit(File)
 Console.SetColor("White")
 Quoted := false, Commented := false
 Last := "`n" ; This lets me put comments and similar on the first line in the file.
-; This is a comment with "quotes" in it
-While (Char := File.Remove(1)) != ""
+While ((Char := File.Remove(1)) != "")
 {
 	if (Asc(Char) == 3)
 	{
@@ -42,7 +41,7 @@ While (Char := File.Remove(1)) != ""
 	{
 		if (Char == "`n") ; Newline
 			Quoted := False, Commented := False, Console.SetColor("White")
-		else if (Char == """" && !Commented)
+		else if (Char == """" && !Commented) ; This is a comment with "quotes" in it
 			Quoted := !Quoted, Console.SetColor("Red")
 		else if (Char == ";" && InStr(" `t`n", Last))
 			Commented := True, Quoted := False, Console.SetColor("Green")
