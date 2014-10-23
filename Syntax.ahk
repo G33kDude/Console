@@ -9,7 +9,7 @@ FileRead, File, %A_LineFile%
 NormalColor := Chr(3) Chr(Console.Colors.White)
 
 File := RegExReplace(File, "\R", "`n")
-Regexes := {"i)((?:\+|-|\*|!|~|&|/|<|>|\^|\||=|\||\?|:|\(|\)|,|%)+)": Console.Colors.Aqua
+Regexes := {"i)([+*!~&/<>^|=?:,.%(){}\[\]\-]+)": Console.Colors.Aqua
 , "m`n)^(\s*#[^\s,\R]+)": Console.Colors.Teal, "\b(0x[0-9A-F]+|\d+)\b": Console.Colors.Fuchsia}
 for Regex, NewColor in Regexes
 	File := RegExReplace(File, Regex, Chr(3) Chr(NewColor) "$1" NormalColor)
