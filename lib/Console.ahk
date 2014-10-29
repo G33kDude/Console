@@ -1,8 +1,31 @@
 ﻿class Console
 {
 	static Handle := DllCall("GetStdHandle", "UInt", (-11,DllCall("AllocConsole")), "UPtr")
+	static hWnd := DllCall("GetConsoleWindow")
 	static Colors := {"Black":0,"Navy":1,"Green":2,"Teal":3,"Maroon":4,"Purple":5,"Olive":6
 	,"Silver":7,"Gray":8,"Blue":9,"Lime":10,"Aqua":11,"Red":12,"Fuchsia":13,"Yellow":14,"White":15}
+	
+	SetFont(w, h)
+	{
+		Loop, % DllCall("GetNumberOfConsoleFonts")
+		{
+			Coord := DllCall("GetConsoleFontSize", "UPtr", Console.Handle, "UInt", A_Index-1)
+			dH := Coord>>16 & 0xFF, dW := Coord & 0xFF
+			if (dW == w && dH == h)
+				return DllCall("SetConsoleFont", "UPtr", Console.Handle, "UInt", A_Index-1)
+		}
+		throw Exception("Size not found")
+	}
+	
+	class _CONSOLE_FONT
+	{
+		__New(Address)
+		{
+			this.index := NumGet(Address+0, "UInt")
+			this.dimW := NumGet(Address+4, "UShort")
+			this.dimH := NumGet(Address+6, "UShort")
+		}
+	}
 	
 	SetIcon(Path, w=0, h=0)
 	{
