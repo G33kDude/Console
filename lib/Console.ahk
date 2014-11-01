@@ -47,12 +47,14 @@
 	{
 		VarSetCapacity(x, 96, 0)
 		NumPut(96, x, "UInt")
-		DllCall("GetConsoleScreenBufferInfoEx", "UPtr", this.Handle, "UPtr", &x)
-		Data := this.Get_CONSOLE_SCREEN_BUFFER_INFOEX(&x)
-		Data.srWindow := [0,0,Width,Height]
-		Data.dwSize := [Width,Height]
-		this.SET_CONSOLE_SCREEN_BUFFER_INFOEX(&x, Data)
-		DllCall("SetConsoleScreenBufferInfoEx", "UPtr", this.Handle, "UPtr", &x)
+		DllCall("GetConsoleScreenBufferInfoEx", "UPtr", Console.Handle, "UPtr", &x)
+		Data := Console.Get_CONSOLE_SCREEN_BUFFER_INFOEX(&x)
+		LargeWidth := Width > Data.dwSize[1] ? Width : Data.dwSize[1]
+		LargeHeight := Height > Data.dwSize[2] ? Height : Data.dwSize[2]
+		
+		DllCall("SetConsoleScreenBufferSize", "UPtr", this.Handle, "UInt", LargeHeight<<16|LargeWidth)
+		DllCall("SetConsoleWindowInfo", "UPtr", this.Handle, "Int", True, "UInt64*", this.SMALL_RECT(1,1,Width,Height), "UInt")
+		return DllCall("SetConsoleScreenBufferSize", "UPtr", this.Handle, "UInt", Height<<16|Width)
 	}
 	
 	SetCursorPos(x, y)
@@ -75,7 +77,7 @@
 			FG := this.Colors.HasKey(FG) ? this.Colors[FG] : 15
 		if (BG < 0 || BG > 15)
 			BG := this.Colors.HasKey(BG) ? this.Colors[BG] : 15
-		return DllCall("SetConsoleTextAttribute", "UPtr", this.Handle, "UInt", FG|BG<<4)
+		return DllCall("SetConsoleTextAttribute", "UPtr", this.Handle, "UShort", FG|BG<<4)
 	}
 	
 	ReadInput(Amount)
@@ -127,12 +129,11 @@
 	{
 		if (NumGet(Address+0, "UInt") != 96)
 			throw Exception("Something is wrong here")
+		
 		ColorTable := []
 		Loop, 16
-		{
-			Color := NumGet(Address+32 + (A_Index-1) * 4, "UInt")
-			ColorTable[A_Index] := [(Color>>16)&0xFF, (Color>>8)&0xFF, (Color)&0xFF]
-		}
+			ColorTable[A_Index] := this.ColorSwap(NumGet(Address+32 + (A_Index-1) * 4, "UInt")) ; BGR to RGB
+		
 		return {cbSize: NumGet(Address+0, "UInt")
 		, dwSize: this.Get_POINT(Address+4)
 		, dwCursorPos: this.Get_POINT(Address+8)
@@ -154,14 +155,14 @@
 		NumPut(Object.wAttributes, Address+12, "UShort")
 		NumPut(Object.srWindow[1], Address+14, "UShort")
 		NumPut(Object.srWindow[2], Address+16, "UShort")
-		NumPut(Object.srWindow[3], Address+18, "UShort")
-		NumPut(Object.srWindow[4], Address+20, "UShort")
+		NumPut(Object.srWindow[3]+1, Address+18, "UShort")
+		NumPut(Object.srWindow[4]+1, Address+20, "UShort")
 		NumPut(Object.dwMaxWinSize[1], Address+22, "UShort")
 		NumPut(Object.dwMaxWinSize[2], Address+24, "UShort")
 		NumPut(Object.wPopupAttributes, Address+26, "UShort")
 		NumPut(Object.bFullscreenSupported, Address+28, "UInt")
-		for Index, Color in ColorTable
-			NumPut((Color[1]&0xFF)<<16|(Color[2]&0xFF)<<8|(Color[1]&0xFF), Address+32 + (Index-1)*4, "UInt")
+		for Index, Color in Object.ColorTable
+			NumPut(this.ColorSwap(Color), Address+32 + (Index-1)*4, "UInt") ; RGB to BGR
 	}
 	
 	Get_SMALL_RECT(Address)
@@ -170,6 +171,11 @@
 		, NumGet(Address+2, "UShort")
 		, NumGet(Address+4, "UShort")
 		, NumGet(Address+6, "UShort")]
+	}
+	
+	ColorSwap(Color)
+	{ ; Turns RGB into BGR into RGB into BGR
+		return (Color&0xFF)<<16|((Color>>8)&0xFF)<<8|((Color>>16)&0xFF)
 	}
 	
 	class _KEY_EVENT_RECORD
