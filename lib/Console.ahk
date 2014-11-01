@@ -45,15 +45,14 @@
 	
 	SetSize(Width, Height)
 	{
-		Width &= 0xFFFF, Height &= 0xFFFF
-		; GOTCHA! Can't set larger window than buffer, can't set smaller buffer than window.
-		; If you want to get smaller, shrink the window first.
-		; If you want to get larger, grow the buffer first
-		; You can work around this by attempting to shrink it both before and after
-		
-		DllCall("SetConsoleScreenBufferSize", "UPtr", this.Handle, "UInt", Height<<16|Width)
-		DllCall("SetConsoleWindowInfo", "UPtr", this.Handle, "Int", True, "UInt64*", this.SMALL_RECT(1,1,Width,Height), "UInt")
-		DllCall("SetConsoleScreenBufferSize", "UPtr", this.Handle, "UInt", Height<<16|Width)
+		VarSetCapacity(x, 96, 0)
+		NumPut(96, x, "UInt")
+		DllCall("GetConsoleScreenBufferInfoEx", "UPtr", this.Handle, "UPtr", &x)
+		Data := this.Get_CONSOLE_SCREEN_BUFFER_INFOEX(&x)
+		Data.srWindow := [0,0,Width,Height]
+		Data.dwSize := [Width,Height]
+		this.SET_CONSOLE_SCREEN_BUFFER_INFOEX(&x, Data)
+		DllCall("SetConsoleScreenBufferInfoEx", "UPtr", this.Handle, "UPtr", &x)
 	}
 	
 	SetCursorPos(x, y)
@@ -117,6 +116,60 @@
 	{
 		y-=1, x-=1
 		return (y&0xFFFF)<<16|(x&0xFFFF)
+	}
+	
+	Get_POINT(Address)
+	{
+		return [NumGet(Address+0, "UShort"), NumGet(Address+2, "UShort")]
+	}
+	
+	Get_CONSOLE_SCREEN_BUFFER_INFOEX(Address)
+	{
+		if (NumGet(Address+0, "UInt") != 96)
+			throw Exception("Something is wrong here")
+		ColorTable := []
+		Loop, 16
+		{
+			Color := NumGet(Address+32 + (A_Index-1) * 4, "UInt")
+			ColorTable[A_Index] := [(Color>>16)&0xFF, (Color>>8)&0xFF, (Color)&0xFF]
+		}
+		return {cbSize: NumGet(Address+0, "UInt")
+		, dwSize: this.Get_POINT(Address+4)
+		, dwCursorPos: this.Get_POINT(Address+8)
+		, wAttributes: NumGet(Address+12, "UShort")
+		, srWindow: this.Get_SMALL_RECT(Address+14)
+		, dwMaxWinSize: this.Get_POINT(Address+22)
+		, wPopupAttributes: NumGet(Address+26, "UShort")
+		, bFullscreenSupported: NumGet(Address+28, "UInt")
+		, ColorTable: ColorTable}
+	}
+	
+	Set_CONSOLE_SCREEN_BUFFER_INFOEX(Address, Object)
+	{
+		NumPut(Object.cbSize, Address+0, "UInt")
+		NumPut(Object.dwSize[1], Address+4, "UShort")
+		NumPut(Object.dwSize[2], Address+6, "UShort")
+		NumPut(Object.dwCursorPos[1], Address+8, "UShort")
+		NumPut(Object.dwCursorPos[2], Address+10, "UShort")
+		NumPut(Object.wAttributes, Address+12, "UShort")
+		NumPut(Object.srWindow[1], Address+14, "UShort")
+		NumPut(Object.srWindow[2], Address+16, "UShort")
+		NumPut(Object.srWindow[3], Address+18, "UShort")
+		NumPut(Object.srWindow[4], Address+20, "UShort")
+		NumPut(Object.dwMaxWinSize[1], Address+22, "UShort")
+		NumPut(Object.dwMaxWinSize[2], Address+24, "UShort")
+		NumPut(Object.wPopupAttributes, Address+26, "UShort")
+		NumPut(Object.bFullscreenSupported, Address+28, "UInt")
+		for Index, Color in ColorTable
+			NumPut((Color[1]&0xFF)<<16|(Color[2]&0xFF)<<8|(Color[1]&0xFF), Address+32 + (Index-1)*4, "UInt")
+	}
+	
+	Get_SMALL_RECT(Address)
+	{
+		return [NumGet(Address+0, "UShort")
+		, NumGet(Address+2, "UShort")
+		, NumGet(Address+4, "UShort")
+		, NumGet(Address+6, "UShort")]
 	}
 	
 	class _KEY_EVENT_RECORD
