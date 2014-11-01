@@ -4,6 +4,8 @@
 	static hWnd := DllCall("GetConsoleWindow")
 	static Colors := {"Black":0,"Navy":1,"Green":2,"Teal":3,"Maroon":4,"Purple":5,"Olive":6
 	,"Silver":7,"Gray":8,"Blue":9,"Lime":10,"Aqua":11,"Red":12,"Fuchsia":13,"Yellow":14,"White":15}
+	static DefaultColorTable := [0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000
+	, 0xC0C0C0, 0x808080, 0x0000FF, 0x00FF00, 0x00FFFF, 0xFF0000, 0xFF00FF, 0xFFFF00, 0xFFFFFF]
 	
 	SetFont(w, h)
 	{
@@ -44,17 +46,36 @@
 	}
 	
 	SetSize(Width, Height)
-	{
-		VarSetCapacity(x, 96, 0)
-		NumPut(96, x, "UInt")
-		DllCall("GetConsoleScreenBufferInfoEx", "UPtr", Console.Handle, "UPtr", &x)
-		Data := Console.Get_CONSOLE_SCREEN_BUFFER_INFOEX(&x)
+	{ ; If this function returns 0, you've probably tried to set a size smaller than allowed by windows.
+		Data := this.GetScreenBufferInfoEx()
 		LargeWidth := Width > Data.dwSize[1] ? Width : Data.dwSize[1]
 		LargeHeight := Height > Data.dwSize[2] ? Height : Data.dwSize[2]
 		
 		DllCall("SetConsoleScreenBufferSize", "UPtr", this.Handle, "UInt", LargeHeight<<16|LargeWidth)
 		DllCall("SetConsoleWindowInfo", "UPtr", this.Handle, "Int", True, "UInt64*", this.SMALL_RECT(1,1,Width,Height), "UInt")
 		return DllCall("SetConsoleScreenBufferSize", "UPtr", this.Handle, "UInt", Height<<16|Width)
+	}
+	
+	GetScreenBufferInfoEx()
+	{
+		VarSetCapacity(x, 96, 0)
+		NumPut(96, x, "UInt")
+		DllCall("GetConsoleScreenBufferInfoEx", "UPtr", this.Handle, "UPtr", &x)
+		return this.Get_CONSOLE_SCREEN_BUFFER_INFOEX(&x)
+	}
+	
+	SetScreenBufferInfoEx(Data)
+	{
+		VarSetCapacity(x, 96, 0)
+		this.Set_CONSOLE_SCREEN_BUFFER_INFOEX(&x, Data)
+		DllCall("SetConsoleScreenBufferInfoEx", "UPtr", this.Handle, "UPtr", &x)
+	}
+	
+	SetColors(ColorTable)
+	{
+		Data := this.GetScreenBufferInfoEx()
+		Data.ColorTable := ColorTable
+		this.SetScreenBufferInfoEx(Data)
 	}
 	
 	SetCursorPos(x, y)
