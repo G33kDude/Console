@@ -3,10 +3,10 @@ SetBatchLines, -1
 #Include lib\Console.ahk
 #Include Commands.ahk
 
-Colors := [0x262626, 0x6C6C9C, 0x9ECE9E, 0x80D4AA
-, 0xBC6C4C, 0xBC6C9C, 0xF8F893, 0xDCDCCC
-, 0xDFDFDF, 0xC0BED1, 0xCBECD0, 0x8CD0D3
-, 0xE89393, 0xC0BED1, 0xF8F893, 0xDCDCCC]
+Colors := [0x3f3f3f,0x3F85CD,0x688060,0x80d4aa
+,0xbc6c4c,0xbc6c9c,0xccdc90,0xdcdccc
+,0x9f9f9f,0x87CEEB,0x9ece9e,0x8cd0d3
+,0xf18c96,0xbc8cbc,0xf8f893,0xefefef]
 
 Console.SetFont(8, 8)
 Console.SetSize(105, 70)
@@ -17,8 +17,8 @@ FileRead, File, %A_ScriptFullPath%
 NormalColor := [Console.Colors.White, Console.Colors.Black]
 
 File := RegExReplace(File, "\R", "`n")
-Regexes := {"i)([+*!~&/<>^|=?:,.%(){}\[\]\-]+)": Console.Colors.Aqua
-, "m`n)^(\s*#[^\s,\R]+)": Console.Colors.Teal, "\b(0x[0-9A-F]+|\d+)\b": Console.Colors.Fuchsia}
+Regexes := {"([+*!~&/<>^|=?:,.%(){}\[\]\-]+)": Console.Colors.Aqua
+, "m`n)^(\s*#[^\s,\R]+)": Console.Colors.Teal, "\b(0x[0-9A-Fa-f]+|\d+)\b": Console.Colors.Fuchsia}
 for Regex, NewColor in Regexes
 	File := RegExReplace(File, Regex, Chr(3) Chr(NewColor) "$1" Chr(3) Chr(NormalColor[1]))
 
