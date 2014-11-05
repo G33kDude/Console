@@ -11,10 +11,10 @@
 	{
 		Loop, % DllCall("GetNumberOfConsoleFonts")
 		{
-			Coord := DllCall("GetConsoleFontSize", "UPtr", Console.Handle, "UInt", A_Index-1)
+			Coord := DllCall("GetConsoleFontSize", "UPtr", this.Handle, "UInt", A_Index-1)
 			dH := Coord>>16 & 0xFF, dW := Coord & 0xFF
 			if (dW == w && dH == h)
-				return DllCall("SetConsoleFont", "UPtr", Console.Handle, "UInt", A_Index-1)
+				return DllCall("SetConsoleFont", "UPtr", this.Handle, "UInt", A_Index-1)
 		}
 		throw Exception("Size not found")
 	}
