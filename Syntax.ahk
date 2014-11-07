@@ -18,7 +18,7 @@ NormalColor := [Console.Colors.White, Console.Colors.Black]
 
 File := RegExReplace(File, "\R", "`n")
 Regexes := {"([+*!~&/<>^|=?:,.%(){}\[\]\-]+)": Console.Colors.Aqua
-, "m`n)^(\s*#[^\s,\R]+)": Console.Colors.Teal, "\b(0x[0-9A-Fa-f]+|\d+)\b": Console.Colors.Fuchsia}
+, "m`n)^(\s*#[^\s,\R]+)": Console.Colors.Teal, "\b(0x[0-9A-Fa-f]+|\d+)\b": Console.Colors.Yellow}
 for Regex, NewColor in Regexes
 	File := RegExReplace(File, Regex, Chr(3) Chr(NewColor) "$1" Chr(3) Chr(NormalColor[1]))
 
@@ -27,7 +27,7 @@ for Type, Words in Commands
 	if Type in Flow,Indent
 		NewColor := Chr(3) Chr(Console.Colors.Lime)
 	else
-		NewColor := Chr(3) Chr(Console.Colors.Yellow)
+		NewColor := Chr(3) Chr(Console.Colors.Navy)
 	
 	StringReplace, Words, Words, %A_Space%, |, All
 	File := RegExReplace(File, "i)\b(" Words ")\b", NewColor "$1" Chr(3) Chr(NormalColor[1]))
