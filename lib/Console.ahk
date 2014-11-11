@@ -124,6 +124,18 @@
 		}
 	}
 	
+	WriteOutput(ConsoleBuffer, Rect)
+	{
+		SmallRect := this.SMALL_RECT(Rect*)
+		Size := ConsoleBuffer.Height << 16 | ConsoleBuffer.Width
+		Point := this.POINT(1, 1)
+		DllCall("WriteConsoleOutput", "UPtr", this.Handle
+		, "UPtr", ConsoleBuffer.Address
+		, "UShort", Size, "UShort", Point
+		, "UInt64*", SmallRect)
+		return this.Get_SMALL_RECT(&SmallRect)
+	}
+	
 	Print(Text)
 	{
 		return FileOpen("CONOUT$", "w").Write(Text)
@@ -210,5 +222,37 @@
 			this.UnicodeChar := NumGet(Address+10, "UShort")
 			this.dwControlKeyState := NumGet(Address+12, "UInt")
 		}
+	}
+}
+
+class ConsoleBuffer
+{
+	__New(w, h)
+	{
+		this.Width := w
+		this.Height := h
+		this.Size := w*h*(3+A_IsUnicode)
+		this.TChar := A_IsUnicode ? "UShort" : "UChar"
+		ObjSetCapacity(this, "Buffer", this.Size)
+		this.Address := ObjGetAddress(this, "Buffer")
+		this.Clear()
+	}
+	
+	Clear()
+	{
+		DllCall("MSVCRT.DLL\memset", "UPtr", this.Address, "Int", 0, "UInt", this.Size)
+	}
+	
+	CoordToOffset(x, y)
+	{
+		return ((y-1)*this.Width + (x-1)) * (3+A_IsUnicode)
+	}
+	
+	Set(x, y, Char, Info)
+	{
+		Offset := this.CoordToOffset(x, y)
+		NumPut(Asc(Char), this.Address+Offset, this.TChar)
+		NumPut(Info, this.Address+Offset+1+A_IsUnicode, "UShort")
+		;MsgBox, % NumGet(this.Address+Offset, this.TChar)
 	}
 }
