@@ -300,7 +300,7 @@ class Tetris
 		Console.WriteOutput(this.Buffer, Area)
 		
 		Console.SetCursorPos(1, this.Settings.Rows+1)
-		Console.Print("Score: " this.Score)
+		Console.Print("Score:" SubStr("    " this.Score, -3))
 	}
 	
 	ParseSettings(Settings)
