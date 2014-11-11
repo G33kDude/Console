@@ -136,6 +136,11 @@
 		return this.Get_SMALL_RECT(&SmallRect)
 	}
 	
+	SetOutputCP(CP)
+	{
+		DllCall("SetConsoleOutputCP", "UInt", CP)
+	}
+	
 	Print(Text)
 	{
 		return FileOpen("CONOUT$", "w").Write(Text)
