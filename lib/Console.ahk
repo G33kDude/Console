@@ -211,9 +211,9 @@
 		, NumGet(Address+6, "UShort")]
 	}
 	
-	ColorSwap(Color)
+	ColorSwap(c)
 	{ ; Turns RGB into BGR into RGB into BGR
-		return (Color&0xFF)<<16|((Color>>8)&0xFF)<<8|((Color>>16)&0xFF)
+		return (c&0xFF)<<16|c&0xFF00|c>>16
 	}
 	
 	class _KEY_EVENT_RECORD
