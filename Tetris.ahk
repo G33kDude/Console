@@ -117,7 +117,7 @@ MyTetris := new Tetris(File)
 
 Console.SetOutputCP(437)
 Console.SetFont(12, 16)
-Console.SetSize(MyTetris.Settings.Cols, MyTetris.Settings.Rows)
+Console.SetSize(MyTetris.Settings.Cols, MyTetris.Settings.Rows+1)
 
 Loop
 {
@@ -280,46 +280,27 @@ class Tetris
 		Out := []
 		
 		Area := [1,1,this.Settings.Cols, this.Settings.Rows]
-		;Console.Scroll(Area, Area, [this.Settings.Cols, this.Settings.Rows], " ")
+		
 		this.Buffer.Clear()
 		n := this.Settings.Rows + 1
 		
 		Loop, % this.Settings.Rows
 		{
 			y := A_Index
-			
 			Loop, % this.Settings.Cols
-			{
-				x := A_Index
-				if (this.Board[y, x] == 0)
-				{
-					;Console.SetColor(this.Board[y, x])
-					;Console.Print(Chr(0xF9)) ; bullet point
-				}
-				else
-				{
-					this.Buffer.Set(x, n-y, Chr(9608), this.Board[y, x]+8)
-					;Out[-y, x] := this.Board[y, x]
-				}
-			}
+				if this.Board[y, A_Index]
+					this.Buffer.Set(A_Index, n-y, Chr(9608), this.Board[y, A_Index]+8)
 		}
 		
 		for y, Row in this.Pieces[this.CurPiece, this.CurRotate]
-		{
 			for x, PieceNo in Row
-			{
 				if (PieceNo != 0)
-				{
-					this.Buffer.Set(this.CurX+x-1, n-(this.CurY+y-1)
-					, Chr(9608), this.CurPiece+8)
-					;Console.SetCursorPos(this.CurX+x-1, this.CurY+y-1)
-					;Console.Print("O")
-				}
-			}
-		}
+					this.Buffer.Set(this.CurX+x-1, n-(this.CurY+y-1), Chr(9608), this.CurPiece+8)
 		
 		Console.WriteOutput(this.Buffer, Area)
-		;Console.Print(Txt)
+		
+		Console.SetCursorPos(1, this.Settings.Rows+1)
+		Console.Print("Score: " this.Score)
 	}
 	
 	ParseSettings(Settings)
