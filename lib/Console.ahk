@@ -143,7 +143,8 @@
 	
 	Print(Text)
 	{
-		return FileOpen("CONOUT$", "w").Write(Text)
+		DllCall("WriteConsole", "UPtr", this.Handle, "Str", Text, "UInt", StrLen(Text), "UInt*", Written, "UInt", 0)
+		return Written
 	}
 	
 	SMALL_RECT(l,t,r,b)
