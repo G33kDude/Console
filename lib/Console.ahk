@@ -236,8 +236,8 @@ class ConsoleBuffer
 	{
 		this.Width := w
 		this.Height := h
-		this.Size := w*h*(3+A_IsUnicode)
-		this.TChar := A_IsUnicode ? "UShort" : "UChar"
+		this.Size := w*h*4
+		
 		ObjSetCapacity(this, "Buffer", this.Size)
 		this.Address := ObjGetAddress(this, "Buffer")
 		this.Clear()
@@ -250,14 +250,13 @@ class ConsoleBuffer
 	
 	CoordToOffset(x, y)
 	{
-		return ((y-1)*this.Width + (x-1)) * (3+A_IsUnicode)
+		return ((y-1)*this.Width + (x-1)) * 4
 	}
 	
 	Set(x, y, Char, Info)
 	{
 		Offset := this.CoordToOffset(x, y)
-		NumPut(Asc(Char), this.Address+Offset, this.TChar)
-		NumPut(Info, this.Address+Offset+1+A_IsUnicode, "UShort")
-		;MsgBox, % NumGet(this.Address+Offset, this.TChar)
+		NumPut(Asc(Char), this.Address+Offset, "UShort")
+		NumPut(Info, this.Address+Offset+2, "UShort")
 	}
 }
