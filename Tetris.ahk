@@ -118,6 +118,7 @@ MyTetris := new Tetris(File)
 Console.SetOutputCP(437)
 Console.SetFont(12, 16)
 Console.SetSize(MyTetris.Settings.Cols, MyTetris.Settings.Rows+1)
+Console.SetColor(Conole.Colors.White)
 
 Loop
 {
