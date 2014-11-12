@@ -283,19 +283,20 @@ class Tetris
 		
 		this.Buffer.Clear()
 		n := this.Settings.Rows + 1
+		Block := A_IsUnicode ? Chr(9608) : Chr(0xDB)
 		
 		Loop, % this.Settings.Rows
 		{
 			y := A_Index
 			Loop, % this.Settings.Cols
 				if this.Board[y, A_Index]
-					this.Buffer.Set(A_Index, n-y, Chr(9608), this.Board[y, A_Index]+8)
+					this.Buffer.Set(A_Index, n-y, Block, this.Board[y, A_Index]+8)
 		}
 		
 		for y, Row in this.Pieces[this.CurPiece, this.CurRotate]
 			for x, PieceNo in Row
 				if (PieceNo != 0)
-					this.Buffer.Set(this.CurX+x-1, n-(this.CurY+y-1), Chr(9608), this.CurPiece+8)
+					this.Buffer.Set(this.CurX+x-1, n-(this.CurY+y-1), Block, this.CurPiece+8)
 		
 		Console.WriteOutput(this.Buffer, Area)
 		
