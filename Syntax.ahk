@@ -1,7 +1,7 @@
 ﻿#SingleInstance, Prompt
 SetBatchLines, -1
 #Include lib\Console.ahk
-#Include Commands.ahk
+#Include lib\Commands.ahk
 
 Colors := [0x3f3f3f,0x3F85CD,0x688060,0x80d4aa
 ,0xbc6c4c,0xbc6c9c,0xccdc90,0xdcdccc
