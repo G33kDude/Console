@@ -136,13 +136,12 @@ Left::MyTetris.MovePiece(MyTetris.CurX-1, MyTetris.CurY), MyTetris.Print()
 Right::MyTetris.MovePiece(MyTetris.CurX+1, MyTetris.CurY), MyTetris.Print()
 Up::MyTetris.RotatePiece(1), MyTetris.Print()
 Down::
-;While GetKeyState(A_ThisHotkey, "p")
-;{
+While GetKeyState(A_ThisHotkey, "p")
+{
 	MyTetris.Step()
-		;Break
 	MyTetris.Print()
-	;Sleep, 50
-;}
+	Sleep, 50
+}
 return
 
 #If WinActive("ahk_pid " ScriptPID)
