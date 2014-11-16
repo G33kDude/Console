@@ -119,15 +119,17 @@ Console.SetFont(12, 16)
 Console.SetSize(MyTetris.Settings.Cols, MyTetris.Settings.Rows+1)
 Console.SetColor(Conole.Colors.White)
 
-Loop
+; Use a timer so we can interrupt the down hotkey
+SetTimer, Step, % -MyTetris.Settings.DropSpeed
+return
+
+Step:
+if (WinActive("ahk_id " Console.hWnd) && !GetKeyState("Down", "P")) ; Down already handles stepping, this is just an annoying judder
 {
-	Sleep, % MyTetris.Settings.DropSpeed
-	if WinActive("ahk_id " Console.hWnd)
-	{
-		MyTetris.Step()
-		MyTetris.Print()
-	}
+	MyTetris.Step()
+	MyTetris.Print()
 }
+SetTimer, Step, % -MyTetris.Settings.DropSpeed
 return
 
 #if WinActive("ahk_id " Console.hWnd)
@@ -136,12 +138,13 @@ Left::MyTetris.MovePiece(MyTetris.CurX-1, MyTetris.CurY), MyTetris.Print()
 Right::MyTetris.MovePiece(MyTetris.CurX+1, MyTetris.CurY), MyTetris.Print()
 Up::MyTetris.RotatePiece(1), MyTetris.Print()
 Down::
-While GetKeyState(A_ThisHotkey, "p")
+While (GetKeyState(A_ThisHotkey, "p") && MyTetris.CurPiece)
 {
 	MyTetris.Step()
 	MyTetris.Print()
 	Sleep, 50
 }
+KeyWait, Down ; Supress key autorepeat. Messes with a looped stepping system so now we use a timer
 return
 
 #If WinActive("ahk_pid " ScriptPID)
