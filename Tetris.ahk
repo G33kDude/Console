@@ -112,7 +112,6 @@ File =
 
 ScriptPID := DllCall("GetCurrentProcessId")
 
-
 MyTetris := new Tetris(File)
 
 Console.SetOutputCP(437)
@@ -122,7 +121,7 @@ Console.SetColor(Conole.Colors.White)
 
 Loop
 {
-	Sleep, % MyTetris.Settings.DropSpeed // 2
+	Sleep, % MyTetris.Settings.DropSpeed
 	if WinActive("ahk_id " Console.hWnd)
 	{
 		MyTetris.Step()
@@ -137,12 +136,13 @@ Left::MyTetris.MovePiece(MyTetris.CurX-1, MyTetris.CurY), MyTetris.Print()
 Right::MyTetris.MovePiece(MyTetris.CurX+1, MyTetris.CurY), MyTetris.Print()
 Up::MyTetris.RotatePiece(1), MyTetris.Print()
 Down::
-While GetKeyState(A_ThisHotkey, "p")
-{
+;While GetKeyState(A_ThisHotkey, "p")
+;{
 	MyTetris.Step()
+		;Break
 	MyTetris.Print()
-	Sleep, 50
-}
+	;Sleep, 50
+;}
 return
 
 #If WinActive("ahk_pid " ScriptPID)
@@ -204,6 +204,16 @@ class Tetris
 	
 	Step()
 	{
+		if !this.CurPiece
+		{
+			if !this.NewPiece()
+			{
+				MsgBox, % "GAME OVER!`nScore: " this.Score " Points!"
+				this.Reset()
+			}
+			return True
+		}
+		
 		if !this.MovePiece(this.CurX, this.CurY-1)
 		{
 			this.Solidify()
@@ -213,12 +223,11 @@ class Tetris
 					Removed *= 2
 				this.Score += Removed * this.Settings.LineScore
 			}
-			if !this.NewPiece()
-			{
-				MsgBox, % "GAME OVER!`nScore: " this.Score " Points!"
-				this.Reset()
-			}
+			this.CurPiece := 0
+			return False
 		}
+		
+		return True
 	}
 	
 	RemoveFullLines()
